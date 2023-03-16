@@ -52,7 +52,7 @@
             </dxg:GridControl.Columns>
             <dxg:GridControl.View>
                 <dxg:TableView GroupSummaryDisplayMode="AlignByColumns" ShowGroupedColumns="True" Name="View" PrintGroupSummaryDisplayMode="AlignByColumns"
-                               ShowIndicator="False" AllowBestFit="True" BestFitMode="AllRows" BestFitModeOnSourceChange="Smart" AllowEditing="True" AutoWidth="True" PrintAutoWidth="True">
+                               ShowIndicator="False" AllowBestFit="True" BestFitMode="AllRows" AutoWidth="True" PrintAutoWidth="True" ShowFixedTotalSummary="True">
                     <dxg:TableView.GroupValueTemplate>
                         <DataTemplate>
                             <TextBlock Text="{Binding Value}" Margin="10,0,0,0" />

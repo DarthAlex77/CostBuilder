@@ -17,10 +17,10 @@ namespace CostBuilder.Model
 
         public Meal()
         {
-            Category1=string.Empty;
-            Category2=string.Empty;
-            Category3=string.Empty;
-            Category4=string.Empty;
+            Category1 = string.Empty;
+            Category2 = string.Empty;
+            Category3 = string.Empty;
+            Category4 = string.Empty;
         }
 
         public Meal(string name, string category1, string category2, string category3, string category4)

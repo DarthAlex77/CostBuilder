@@ -1,11 +1,8 @@
 ﻿using System.Collections.ObjectModel;
 using CostBuilder.Model;
 using CostBuilder.Views;
-using DevExpress.Export;
 using DevExpress.Mvvm;
-using DevExpress.Utils;
 using DevExpress.Xpf.Grid;
-using DevExpress.XtraPrinting;
 using Microsoft.Win32;
 
 namespace CostBuilder.ViewModels

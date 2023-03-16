@@ -7,7 +7,6 @@ using System.Text.Json;
 using System.Text.Unicode;
 using CostBuilder.Model;
 using DevExpress.Mvvm;
-using DevExpress.Mvvm.Native;
 using Microsoft.Win32;
 
 namespace CostBuilder.ViewModels

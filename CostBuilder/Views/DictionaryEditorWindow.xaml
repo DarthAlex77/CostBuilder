@@ -24,7 +24,7 @@
         </Grid.RowDefinitions>
         <dxg:GridControl Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="2" ItemsSource="{Binding Meals}" AutoGenerateColumns="None" SelectionMode="Cell">
             <dxg:GridControl.View>
-                <dxg:TableView CellValueChanging="GridViewBase_OnCellValueChanging" CellValueChanged="GridViewBase_OnCellValueChanged" ShowGroupedColumns="True"/>
+                <dxg:TableView CellValueChanging="GridViewBase_OnCellValueChanging" CellValueChanged="GridViewBase_OnCellValueChanged" ShowGroupedColumns="True" />
             </dxg:GridControl.View>
             <dxg:GridControl.Columns>
                 <dxg:GridColumn FieldName="Name" Header="Название" />
