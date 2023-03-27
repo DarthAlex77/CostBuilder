@@ -134,6 +134,7 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
+    <Compile Include="Helpers\Extensions.cs" />
     <Compile Include="ViewModels\ReferenceEditorViewModel.cs" />
     <Page Include="Views\DictionaryEditorWindow.xaml">
       <SubType>Designer</SubType>

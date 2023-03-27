@@ -22,6 +22,7 @@
         </Menu>
         <dxg:GridControl Grid.Row="1" AutoGenerateColumns="None" ItemsSource="{Binding Meals}">
             <dxg:GridControl.Columns>
+                <dxg:GridColumn Header="Отель" FieldName="Hotel" />
                 <dxg:GridColumn Header="Название" FieldName="Name" />
                 <dxg:GridColumn Header="Учетный день" FieldName="DayOfSale" />
                 <dxg:GridColumn Header="Кол-во" FieldName="Count" />
@@ -51,8 +52,8 @@
                 <dxg:GridColumn FieldName="Category4" Header="Категория 4" />
             </dxg:GridControl.Columns>
             <dxg:GridControl.View>
-                <dxg:TableView GroupSummaryDisplayMode="AlignByColumns" ShowGroupedColumns="True" Name="View" PrintGroupSummaryDisplayMode="AlignByColumns"
-                               ShowIndicator="False" AllowBestFit="True" BestFitMode="AllRows" AutoWidth="True" PrintAutoWidth="True" ShowFixedTotalSummary="True">
+                <dxg:TableView GroupSummaryDisplayMode="AlignByColumns" ShowGroupedColumns="True" Name="View" PrintGroupSummaryDisplayMode="AlignByColumns" AllowCascadeUpdate="True" AllowEditing="False"
+                               AllowGroupSummaryCascadeUpdate="True" ShowIndicator="False" AllowBestFit="True" BestFitMode="AllRows" AutoWidth="True" PrintAutoWidth="True">
                     <dxg:TableView.GroupValueTemplate>
                         <DataTemplate>
                             <TextBlock Text="{Binding Value}" Margin="10,0,0,0" />

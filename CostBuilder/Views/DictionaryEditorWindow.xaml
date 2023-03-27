@@ -24,9 +24,17 @@
         </Grid.RowDefinitions>
         <dxg:GridControl Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="2" ItemsSource="{Binding Meals}" AutoGenerateColumns="None" SelectionMode="Cell">
             <dxg:GridControl.View>
-                <dxg:TableView CellValueChanging="GridViewBase_OnCellValueChanging" CellValueChanged="GridViewBase_OnCellValueChanged" ShowGroupedColumns="True" />
+                <dxg:TableView CellValueChanging="GridViewBase_OnCellValueChanging" CellValueChanged="GridViewBase_OnCellValueChanged" ShowGroupedColumns="True" AllowCascadeUpdate="True"
+                               AllowGroupSummaryCascadeUpdate="True">
+                    <dxg:TableView.GroupValueTemplate>
+                        <DataTemplate>
+                            <TextBlock Text="{Binding Value}" Margin="10,0,0,0" />
+                        </DataTemplate>
+                    </dxg:TableView.GroupValueTemplate>
+                </dxg:TableView>
             </dxg:GridControl.View>
             <dxg:GridControl.Columns>
+                <dxg:GridColumn FieldName="Hotel" Header="Отель" ReadOnly="True" />
                 <dxg:GridColumn FieldName="Name" Header="Название" />
                 <dxg:GridColumn FieldName="Category1" Header="Категория 1" />
                 <dxg:GridColumn FieldName="Category2" Header="Категория 2" />
@@ -34,10 +42,6 @@
                 <dxg:GridColumn FieldName="Category4" Header="Категория 4" />
             </dxg:GridControl.Columns>
         </dxg:GridControl>
-        <StackPanel Grid.Row="1" Grid.Column="0" Orientation="Horizontal" FlowDirection="LeftToRight">
-            <Button Width="75" Content="Загрузить" Height="35" Margin="5" Padding="5" Command="{Binding LoadCommand}" />
-            <Button Width="75" Content="Новый" Height="35" Margin="5" Padding="5" Command="{Binding NewCommand}" />
-        </StackPanel>
         <StackPanel Grid.Row="1" Grid.Column="1" Orientation="Horizontal" FlowDirection="RightToLeft">
             <Button Width="75" Content="Сохранить" Height="35" Margin="5" Padding="5" Command="{Binding SaveCommand}" />
             <Button Width="75" Content="Отменить" Height="35" Margin="5" Padding="5" IsCancel="True" />

@@ -2,12 +2,12 @@
 using System.Collections.Generic;
 using System.Data;
 using System.IO;
+using System.Linq;
 using System.Text.Json;
 using System.Windows;
+using CostBuilder.Helpers;
 using DevExpress.Mvvm;
-using DevExpress.Xpf.Core;
 using ExcelDataReader;
-using Microsoft.Win32;
 
 namespace CostBuilder.Model
 {
@@ -48,7 +48,7 @@ namespace CostBuilder.Model
             {
                 return true;
             }
-            return string.Equals(Name, other.Name, StringComparison.InvariantCulture) && string.Equals(Category1, other.Category1);
+            return string.Equals(Name, other.Name, StringComparison.InvariantCulture) && string.Equals(Hotel, other.Hotel, StringComparison.InvariantCultureIgnoreCase);
         }
 
         public override bool Equals(object obj)
@@ -71,84 +71,105 @@ namespace CostBuilder.Model
 
         #endregion
 
-        public static List<Meal> GetMealsListFromExcel(string filePath, bool askForDict)
+        public static List<Meal> GetMealsListFromExcel(string filePath)
         {
-            bool                                        isDictOpened = false;
-            List<Meal>                                  meals        = new List<Meal>(500);
-            Dictionary<string, Dictionary<int, string>> dictionary   = null;
-            using (FileStream stream = File.Open(filePath, FileMode.Open, FileAccess.Read))
+            List<Meal> meals = new List<Meal>(5000);
+            DataTable  table;
+            try
             {
-                using (IExcelDataReader reader = ExcelReaderFactory.CreateReader(stream))
+                using FileStream stream = File.Open(filePath, FileMode.Open, FileAccess.Read);
                 {
-                    DataTable table = reader.AsDataSet().Tables[0];
-                    foreach (DataRow row in table.Rows)
+                    using IExcelDataReader reader = ExcelReaderFactory.CreateReader(stream);
                     {
-                        if (row[0].ToString().Contains("всего") || row[0].ToString().Contains("Итого") || !double.TryParse(row[3].ToString(), out _) || row[1].ToString().Contains("всего"))
+                        table = reader.AsDataSet().Tables[0];
+                        foreach (DataRow row in table.Rows)
                         {
-                            row.Delete();
+                            if (row[0].ToString().Contains("всего") || row[0].ToString().Contains("Итого") || !double.TryParse(row[4].ToString(), out _) ||
+                                row[1].ToString().Contains("всего") || row[2].ToString().Contains("всего"))
+                            {
+                                row.Delete();
+                            }
                         }
+                        table.AcceptChanges();
+                        table.RemoveEmptyColumns();
                     }
-                    table.AcceptChanges();
-                    string   mealName    = string.Empty;
-                    DateTime lasDateTime = default;
-                    if (askForDict)
-                    {
-                        if (ThemedMessageBox.Show("Открыть словарь?", "Вы хотите открыть файл словаря для этого отчета", MessageBoxButton.YesNo, MessageBoxResult.OK) == MessageBoxResult.Yes)
-                        {
-                            OpenFileDialog dialog = new OpenFileDialog();
-                            dialog.InitialDirectory = Directory.GetCurrentDirectory() + "\\dict";
-                            dialog.Filter           = "CostBuilder dict file (*.dict)|*.dict";
-                            if (dialog.ShowDialog() == true)
-                            {
-                                using FileStream st = File.Open(dialog.FileName, FileMode.Open);
-                                {
-                                    dictionary = JsonSerializer.Deserialize<Dictionary<string, Dictionary<int, string>>>(st);
-                                }
-                                isDictOpened = true;
-                            }
-                        }
-                    }
-                    foreach (DataRow row in table.Rows)
-                    {
-                        if (!string.IsNullOrWhiteSpace(row[0].ToString()))
-                        {
-                            mealName = row[0].ToString();
-                        }
-                        if (DateTime.TryParse(row[1].ToString(), out DateTime t))
-                        {
-                            lasDateTime = t;
-                        }
-                        try
-                        {
-                            Meal meal = new Meal
-                            {
-                                Name          = mealName,
-                                DayOfSale     = lasDateTime,
-                                Count         = double.Parse(row[3].ToString()),
-                                Sum           = decimal.Parse(row[4].ToString()),
-                                SumWithoutVat = decimal.Parse(row[6].ToString()),
-                                Cost          = decimal.Parse(row[7].ToString()),
-                                CostPerUnit   = decimal.Parse(row[8].ToString())
-                            };
-                            if (isDictOpened)
-                            {
-                                meal.Category1 = dictionary[mealName][1];
-                                meal.Category2 = dictionary[mealName][2];
-                                meal.Category3 = dictionary[mealName][3];
-                                meal.Category4 = dictionary[mealName][4];
-                            }
-                            else
-                            {
-                                meal.Category1 = row[2].ToString();
-                            }
+                }
+            }
+            catch (IOException)
+            {
+                MessageBox.Show("Файл открыт в другой программе. Закройте его", "Закройте файл", MessageBoxButton.OK, MessageBoxImage.Error);
+                return null;
+            }
+            string     hotelName   = string.Empty;
+            string     mealName    = string.Empty;
+            DateTime   lasDateTime = default;
+            List<Meal> dict        = null;
+            bool       isDictExist;
 
-                            meals.Add(meal);
-                        }
-                        catch (FormatException)
-                        {
-                            // ignored
-                        }
+            try
+            {
+                using FileStream fileStream = File.Open("dict", FileMode.Open);
+                {
+                    dict = JsonSerializer.Deserialize<List<Meal>>(fileStream);
+                }
+                isDictExist = true;
+            }
+            catch (IOException e)
+            {
+                isDictExist = false;
+            }
+            foreach (DataRow row in table.Rows)
+            {
+                if (!string.IsNullOrWhiteSpace(row[0].ToString()))
+                {
+                    hotelName = row[0].ToString();
+                }
+                if (!string.IsNullOrWhiteSpace(row[1].ToString()))
+                {
+                    mealName = row[1].ToString();
+                }
+                if (DateTime.TryParse(row[2].ToString(), out DateTime t))
+                {
+                    lasDateTime = t;
+                }
+                Meal meal = new Meal
+                {
+                    Hotel         = hotelName,
+                    Name          = mealName,
+                    DayOfSale     = lasDateTime,
+                    Count         = double.Parse(row[4].ToString()),
+                    Sum           = decimal.Parse(row[5].ToString()),
+                    SumWithoutVat = decimal.Parse(row[6].ToString()),
+                    Cost          = decimal.Parse(row[7].ToString()),
+                    CostPerUnit   = decimal.Parse(row[8].ToString())
+                };
+                if (isDictExist)
+                {
+                    Meal tmp = dict.Find(x => string.Equals(x.Hotel, meal.Hotel) && string.Equals(x.Name, meal.Name));
+                    if (tmp != null)
+                    {
+                        meal.Category1 = tmp.Category1;
+                        meal.Category2 = tmp.Category2;
+                        meal.Category3 = tmp.Category3;
+                        meal.Category4 = tmp.Category4;
                     }
+                    else
+                    {
+                        meal.Category1 = row[3].ToString();
+                        dict.Add(meal);
+                    }
+                }
+                else
+                {
+                    meal.Category1 = row[3].ToString();
+                }
+                meals.Add(meal);
+            }
+            if (!isDictExist)
+            {
+                using FileStream fileStream = File.Open("dict", FileMode.Create);
+                {
+                    JsonSerializer.Serialize(fileStream, meals.Distinct());
                 }
             }
             return meals;
@@ -157,6 +178,12 @@ namespace CostBuilder.Model
         #endregion
 
         #region Properties
+
+        public string Hotel
+        {
+            get => GetValue<string>();
+            set => SetValue(value);
+        }
 
         public string Name
         {

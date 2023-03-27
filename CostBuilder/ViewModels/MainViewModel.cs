@@ -22,6 +22,7 @@ namespace CostBuilder.ViewModels
 
         #region Properties
 
+
         public ObservableCollection<Meal> Meals
         {
             get => GetValue<ObservableCollection<Meal>>();
@@ -53,7 +54,7 @@ namespace CostBuilder.ViewModels
             dialog.Filter = "Excel Worksheets|*.xls;*.xlsx";
             if (dialog.ShowDialog() == true)
             {
-                Meals = new ObservableCollection<Meal>(Meal.GetMealsListFromExcel(dialog.FileName, true));
+                Meals = new ObservableCollection<Meal>(Meal.GetMealsListFromExcel(dialog.FileName));
             }
         }
 
@@ -67,7 +68,7 @@ namespace CostBuilder.ViewModels
         {
             SaveFileDialog dialog = new SaveFileDialog();
             dialog.DefaultExt = ".xlsx";
-            dialog.Filter     = "Excel Worksheets|*.xls;*.xlsx";
+            dialog.Filter     = "Excel Worksheets|*.xlsx";
             if (dialog.ShowDialog() == true)
             {
                 tableView.ExportToXlsx(dialog.FileName);
