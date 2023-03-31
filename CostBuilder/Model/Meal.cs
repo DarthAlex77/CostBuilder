@@ -21,15 +21,17 @@ namespace CostBuilder.Model
             Category2 = string.Empty;
             Category3 = string.Empty;
             Category4 = string.Empty;
+            Category5 = string.Empty;
         }
 
-        public Meal(string name, string category1, string category2, string category3, string category4)
+        public Meal(string name, string category1, string category2, string category3, string category4,string category5)
         {
             Name      = name;
             Category1 = category1;
             Category2 = category2;
             Category3 = category3;
             Category4 = category4;
+            Category5 = category5;
         }
 
         #endregion
@@ -84,7 +86,7 @@ namespace CostBuilder.Model
                         table = reader.AsDataSet().Tables[0];
                         foreach (DataRow row in table.Rows)
                         {
-                            if (row[0].ToString().Contains("всего") || row[0].ToString().Contains("Итого") || !double.TryParse(row[4].ToString(), out _) ||
+                            if (row[0].ToString().Contains("всего") || row[0].ToString().Contains("Итого") || !double.TryParse(row[5].ToString(), out _) ||
                                 row[1].ToString().Contains("всего") || row[2].ToString().Contains("всего"))
                             {
                                 row.Delete();
@@ -137,11 +139,11 @@ namespace CostBuilder.Model
                     Hotel         = hotelName,
                     Name          = mealName,
                     DayOfSale     = lasDateTime,
-                    Count         = double.Parse(row[4].ToString()),
-                    Sum           = decimal.Parse(row[5].ToString()),
-                    SumWithoutVat = decimal.Parse(row[6].ToString()),
-                    Cost          = decimal.Parse(row[7].ToString()),
-                    CostPerUnit   = decimal.Parse(row[8].ToString())
+                    Count         = double.Parse(row[5].ToString()),
+                    Sum           = decimal.Parse(row[6].ToString()),
+                    SumWithoutVat = decimal.Parse(row[7].ToString()),
+                    Cost          = decimal.Parse(row[8].ToString()),
+                    CostPerUnit   = decimal.Parse(row[9].ToString())
                 };
                 if (isDictExist)
                 {
@@ -152,16 +154,19 @@ namespace CostBuilder.Model
                         meal.Category2 = tmp.Category2;
                         meal.Category3 = tmp.Category3;
                         meal.Category4 = tmp.Category4;
+                        meal.Category5 = tmp.Category5;
                     }
                     else
                     {
                         meal.Category1 = row[3].ToString();
+                        meal.Category2 = row[4].ToString();
                         dict.Add(meal);
                     }
                 }
                 else
                 {
                     meal.Category1 = row[3].ToString();
+                    meal.Category2 = row[4].ToString();
                 }
                 meals.Add(meal);
             }
@@ -242,6 +247,11 @@ namespace CostBuilder.Model
             set => SetValue(value);
         }
         public string Category4
+        {
+            get => GetValue<string>();
+            set => SetValue(value);
+        }
+        public string Category5
         {
             get => GetValue<string>();
             set => SetValue(value);

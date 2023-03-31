@@ -40,6 +40,7 @@
                 <dxg:GridColumn FieldName="Category2" Header="Категория 2" />
                 <dxg:GridColumn FieldName="Category3" Header="Категория 3" />
                 <dxg:GridColumn FieldName="Category4" Header="Категория 4" />
+                <dxg:GridColumn FieldName="Category4" Header="Категория 5" />
             </dxg:GridControl.Columns>
         </dxg:GridControl>
         <StackPanel Grid.Row="1" Grid.Column="1" Orientation="Horizontal" FlowDirection="RightToLeft">
