@@ -50,7 +50,7 @@
                 <dxg:GridColumn FieldName="Category2" Header="Категория 2" />
                 <dxg:GridColumn FieldName="Category3" Header="Категория 3" />
                 <dxg:GridColumn FieldName="Category4" Header="Категория 4" />
-                <dxg:GridColumn FieldName="Category4" Header="Категория 5" />
+                <dxg:GridColumn FieldName="Category5" Header="Категория 5" />
             </dxg:GridControl.Columns>
             <dxg:GridControl.View>
                 <dxg:TableView GroupSummaryDisplayMode="AlignByColumns" ShowGroupedColumns="True" Name="View" PrintGroupSummaryDisplayMode="AlignByColumns" AllowCascadeUpdate="True" AllowEditing="False"

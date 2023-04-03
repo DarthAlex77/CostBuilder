@@ -1,8 +1,10 @@
-﻿using System.Collections.ObjectModel;
+﻿using System;
+using System.Collections.ObjectModel;
 using System.IO;
 using System.Text.Encodings.Web;
 using System.Text.Json;
 using System.Text.Unicode;
+using System.Windows;
 using CostBuilder.Model;
 using DevExpress.Mvvm;
 
@@ -17,9 +19,18 @@ namespace CostBuilder.ViewModels
             CloseTrigger = false;
             Meals        = new ObservableCollection<Meal>();
             SaveCommand  = new DelegateCommand(Save);
-            using FileStream fileStream = File.Open("dict", FileMode.Open);
+            try
             {
-                Meals = JsonSerializer.Deserialize<ObservableCollection<Meal>>(fileStream);
+
+                using FileStream fileStream = File.Open("dict", FileMode.Open);
+                {
+                    Meals = JsonSerializer.Deserialize<ObservableCollection<Meal>>(fileStream);
+                }
+            }
+            catch (IOException e)
+            {
+                MessageBox.Show("Файл справочника не найден.\nОткройте файл отчета в главном окне для генерации справочника","Файл не найден", MessageBoxButton.OK, MessageBoxImage.Error);
+                Meals = new ObservableCollection<Meal>();
             }
         }
 
