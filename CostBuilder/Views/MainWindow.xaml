@@ -36,7 +36,7 @@
                         <dxe:TextEditSettings DisplayFormat="c2" />
                     </dxg:GridColumn.EditSettings>
                 </dxg:GridColumn>
-                <dxg:GridColumn Header="Себестоимость" FieldName="Cost">
+                <dxg:GridColumn Header="Себестоимость" FieldName="CalculatedCost">
                     <dxg:GridColumn.EditSettings>
                         <dxe:TextEditSettings DisplayFormat="c2" />
                     </dxg:GridColumn.EditSettings>
@@ -46,15 +46,17 @@
                         <dxe:TextEditSettings DisplayFormat="c2" />
                     </dxg:GridColumn.EditSettings>
                 </dxg:GridColumn>
+                <dxg:GridColumn FieldName="Unit" Header="Отделение" />
+                <dxg:GridColumn FieldName="MealGroup" Header="Группа блюд" />
                 <dxg:GridColumn FieldName="Category1" Header="Категория 1" />
                 <dxg:GridColumn FieldName="Category2" Header="Категория 2" />
                 <dxg:GridColumn FieldName="Category3" Header="Категория 3" />
-                <dxg:GridColumn FieldName="Category4" Header="Категория 4" />
-                <dxg:GridColumn FieldName="Category5" Header="Категория 5" />
             </dxg:GridControl.Columns>
             <dxg:GridControl.View>
-                <dxg:TableView GroupSummaryDisplayMode="AlignByColumns" ShowGroupedColumns="True" Name="View" PrintGroupSummaryDisplayMode="AlignByColumns" AllowCascadeUpdate="True" AllowEditing="False"
-                               AllowGroupSummaryCascadeUpdate="True" ShowIndicator="False" AllowBestFit="True" BestFitMode="AllRows" AutoWidth="True" PrintAutoWidth="True">
+                <dxg:TableView GroupSummaryDisplayMode="AlignByColumns" ShowGroupedColumns="True" Name="View" PrintGroupSummaryDisplayMode="AlignByColumns" AllowCascadeUpdate="True"
+                               AllowEditing="False"
+                               AllowGroupSummaryCascadeUpdate="True" ShowIndicator="False" AllowBestFit="True" BestFitMode="AllRows" AutoWidth="True" PrintAutoWidth="True"
+                               ShowSearchPanelMode="Always" ShowFilterPanelMode="ShowAlways">
                     <dxg:TableView.GroupValueTemplate>
                         <DataTemplate>
                             <TextBlock Text="{Binding Value}" Margin="10,0,0,0" />
@@ -66,9 +68,41 @@
                 <dxg:GridSummaryItem FieldName="Count" SummaryType="Sum" DisplayFormat=" {0}" />
                 <dxg:GridSummaryItem FieldName="Sum" SummaryType="Sum" DisplayFormat=" {0:c2}" />
                 <dxg:GridSummaryItem FieldName="SumWithoutVat" SummaryType="Sum" DisplayFormat=" {0:c2}" />
-                <dxg:GridSummaryItem FieldName="Cost" SummaryType="Sum" DisplayFormat=" {0:c2}" />
+                <dxg:GridSummaryItem FieldName="CalculatedCost" SummaryType="Sum" DisplayFormat=" {0:c2}" />
                 <dxg:GridSummaryItem FieldName="CostPerUnit" SummaryType="Sum" DisplayFormat=" {0:c2}" />
             </dxg:GridControl.GroupSummary>
+            <dxg:GridControl.DetailDescriptor>
+                <dxg:DataControlDetailDescriptor ItemsSourcePath="Modificators">
+                    <dxg:GridControl AutoGenerateColumns="None">
+                        <dxg:GridControl.Columns>
+                            <dxg:GridColumn Header="Отель" FieldName="Hotel" />
+                            <dxg:GridColumn Header="Название" FieldName="Name" />
+                            <dxg:GridColumn Header="Учетный день" FieldName="DayOfSale" />
+                            <dxg:GridColumn Header="Кол-во" FieldName="Count" />
+                            <dxg:GridColumn Header="Сумма" FieldName="Sum">
+                                <dxg:GridColumn.EditSettings>
+                                    <dxe:TextEditSettings DisplayFormat="c2" />
+                                </dxg:GridColumn.EditSettings>
+                            </dxg:GridColumn>
+                            <dxg:GridColumn Header="Сумма без НДС" FieldName="SumWithoutVat">
+                                <dxg:GridColumn.EditSettings>
+                                    <dxe:TextEditSettings DisplayFormat="c2" />
+                                </dxg:GridColumn.EditSettings>
+                            </dxg:GridColumn>
+                            <dxg:GridColumn Header="Себестоимость" FieldName="Cost">
+                                <dxg:GridColumn.EditSettings>
+                                    <dxe:TextEditSettings DisplayFormat="c2" />
+                                </dxg:GridColumn.EditSettings>
+                            </dxg:GridColumn>
+                            <dxg:GridColumn Header="Себес. за ед." FieldName="CostPerUnit">
+                                <dxg:GridColumn.EditSettings>
+                                    <dxe:TextEditSettings DisplayFormat="c2" />
+                                </dxg:GridColumn.EditSettings>
+                            </dxg:GridColumn>
+                        </dxg:GridControl.Columns>
+                    </dxg:GridControl>
+                </dxg:DataControlDetailDescriptor>
+            </dxg:GridControl.DetailDescriptor>
         </dxg:GridControl>
     </Grid>
 </dx:ThemedWindow>

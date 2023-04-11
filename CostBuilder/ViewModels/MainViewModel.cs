@@ -22,10 +22,14 @@ namespace CostBuilder.ViewModels
 
         #region Properties
 
-
         public ObservableCollection<Meal> Meals
         {
             get => GetValue<ObservableCollection<Meal>>();
+            set => SetValue(value);
+        }
+        public bool IsLoading
+        {
+            get => GetValue<bool>();
             set => SetValue(value);
         }
 

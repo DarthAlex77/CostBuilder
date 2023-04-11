@@ -40,6 +40,7 @@
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
     <LangVersion>latest</LangVersion>
+    <Nullable>enable</Nullable>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <PlatformTarget>AnyCPU</PlatformTarget>
@@ -50,6 +51,7 @@
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
     <LangVersion>latest</LangVersion>
+    <Nullable>enable</Nullable>
   </PropertyGroup>
   <PropertyGroup>
     <ManifestCertificateThumbprint>6C3E879E5250DC3EEA07B6822C19945FD0B6909D</ManifestCertificateThumbprint>
@@ -134,8 +136,8 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
-    <Compile Include="Helpers\Extensions.cs" />
-    <Compile Include="ViewModels\ReferenceEditorViewModel.cs" />
+    <Compile Include="Model\Modificator.cs" />
+    <Compile Include="ViewModels\DictionaryEditorViewModel.cs" />
     <Page Include="Views\DictionaryEditorWindow.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
@@ -148,7 +150,6 @@
       <DependentUpon>App.xaml</DependentUpon>
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="Helpers\CloseWindowBehavior.cs" />
     <Compile Include="Views\DictionaryEditorWindow.xaml.cs">
       <DependentUpon>DictionaryEditorWindow.xaml</DependentUpon>
     </Compile>

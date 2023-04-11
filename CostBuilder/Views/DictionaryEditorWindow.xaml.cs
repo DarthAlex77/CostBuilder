@@ -1,4 +1,6 @@
-﻿using DevExpress.Xpf.Grid;
+﻿using System;
+using System.ComponentModel;
+using DevExpress.Xpf.Grid;
 
 namespace CostBuilder.Views
 {

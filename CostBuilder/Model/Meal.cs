@@ -1,11 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Data;
 using System.IO;
 using System.Linq;
 using System.Text.Json;
 using System.Windows;
-using CostBuilder.Helpers;
 using DevExpress.Mvvm;
 using ExcelDataReader;
 
@@ -13,25 +13,15 @@ namespace CostBuilder.Model
 {
     public class Meal : BindableBase, IEquatable<Meal>
     {
-        #region Constructors
+        #region Constructor
 
         public Meal()
         {
-            Category1 = string.Empty;
-            Category2 = string.Empty;
-            Category3 = string.Empty;
-            Category4 = string.Empty;
-            Category5 = string.Empty;
-        }
-
-        public Meal(string name, string category1, string category2, string category3, string category4,string category5)
-        {
-            Name      = name;
-            Category1 = category1;
-            Category2 = category2;
-            Category3 = category3;
-            Category4 = category4;
-            Category5 = category5;
+            Unit         = string.Empty;
+            MealGroup    = string.Empty;
+            Category1    = string.Empty;
+            Category2    = string.Empty;
+            Category3    = string.Empty;
         }
 
         #endregion
@@ -73,10 +63,25 @@ namespace CostBuilder.Model
 
         #endregion
 
+        public static void RemoveEmptyColumns(ref DataTable table, int columnStartIndex = 0)
+        {
+            for (int i = table.Columns.Count - 1; i >= columnStartIndex; i--)
+            {
+                DataColumn col = table.Columns[i];
+                if (table.AsEnumerable().All(r => r.IsNull(col) || string.IsNullOrWhiteSpace(r[col].ToString())))
+                {
+                    table.Columns.RemoveAt(i);
+                }
+            }
+            table.AcceptChanges();
+        }
+
         public static List<Meal> GetMealsListFromExcel(string filePath)
         {
-            List<Meal> meals = new List<Meal>(5000);
-            DataTable  table;
+            List<Meal>        meals = new List<Meal>(25000);
+            List<Modificator> mods  = new List<Modificator>(25000);
+            DataTable         table;
+            //Clear unused row and headers
             try
             {
                 using FileStream stream = File.Open(filePath, FileMode.Open, FileAccess.Read);
@@ -84,28 +89,32 @@ namespace CostBuilder.Model
                     using IExcelDataReader reader = ExcelReaderFactory.CreateReader(stream);
                     {
                         table = reader.AsDataSet().Tables[0];
+                        RemoveEmptyColumns(ref table);
+                        table.Rows.RemoveAt(table.Rows.Count);
                         foreach (DataRow row in table.Rows)
                         {
-                            if (row[0].ToString().Contains("всего") || row[0].ToString().Contains("Итого") || !double.TryParse(row[5].ToString(), out _) ||
-                                row[1].ToString().Contains("всего") || row[2].ToString().Contains("всего"))
+                            if (row[0].ToString().Contains("всего") || row[2].ToString().Contains("всего") ||
+                                row[3].ToString().Contains("всего") || !double.TryParse(row[6].ToString(), out _))
                             {
                                 row.Delete();
                             }
                         }
                         table.AcceptChanges();
-                        table.RemoveEmptyColumns();
                     }
                 }
             }
             catch (IOException)
             {
                 MessageBox.Show("Файл открыт в другой программе. Закройте его", "Закройте файл", MessageBoxButton.OK, MessageBoxImage.Error);
-                return null;
+                return new List<Meal>(0);
             }
-            string     hotelName   = string.Empty;
-            string     mealName    = string.Empty;
-            DateTime   lasDateTime = default;
-            List<Meal> dict        = null;
+            //end Clear unused row and headers
+            bool       isModificator = false;
+            string     hotelName     = string.Empty;
+            string     modName       = string.Empty;
+            string     mealName      = string.Empty;
+            DateTime   lasDateTime   = default;
+            List<Meal> dict          = null;
             bool       isDictExist;
 
             try
@@ -120,61 +129,113 @@ namespace CostBuilder.Model
             {
                 isDictExist = false;
             }
+            Modificator modificator;
+            Meal        meal = null;
             foreach (DataRow row in table.Rows)
             {
+                if (row[1].ToString().Contains("всего"))
+                {
+                    isModificator = false;
+                    continue;
+                }
                 if (!string.IsNullOrWhiteSpace(row[0].ToString()))
                 {
                     hotelName = row[0].ToString();
                 }
                 if (!string.IsNullOrWhiteSpace(row[1].ToString()))
                 {
-                    mealName = row[1].ToString();
+                    mealName      = row[1].ToString();
+                    isModificator = true;
                 }
-                if (DateTime.TryParse(row[2].ToString(), out DateTime t))
+                if (!string.IsNullOrWhiteSpace(row[2].ToString()))
                 {
-                    lasDateTime = t;
-                }
-                Meal meal = new Meal
-                {
-                    Hotel         = hotelName,
-                    Name          = mealName,
-                    DayOfSale     = lasDateTime,
-                    Count         = double.Parse(row[5].ToString()),
-                    Sum           = decimal.Parse(row[6].ToString()),
-                    SumWithoutVat = decimal.Parse(row[7].ToString()),
-                    Cost          = decimal.Parse(row[8].ToString()),
-                    CostPerUnit   = decimal.Parse(row[9].ToString())
-                };
-                if (isDictExist)
-                {
-                    Meal tmp = dict.Find(x => string.Equals(x.Hotel, meal.Hotel) && string.Equals(x.Name, meal.Name));
-                    if (tmp != null)
+                    if (isModificator)
                     {
-                        meal.Category1 = tmp.Category1;
-                        meal.Category2 = tmp.Category2;
-                        meal.Category3 = tmp.Category3;
-                        meal.Category4 = tmp.Category4;
-                        meal.Category5 = tmp.Category5;
+                        modName = row[2].ToString();
                     }
                     else
                     {
-                        meal.Category1 = row[3].ToString();
-                        meal.Category2 = row[4].ToString();
-                        dict.Add(meal);
+                        mealName = row[2].ToString();
                     }
+                }
+                if (DateTime.TryParse(row[3].ToString(), out DateTime t))
+                {
+                    lasDateTime = t;
+                }
+                if (isModificator)
+                {
+                    modificator = new Modificator
+                    {
+                        MealName      = mealName,
+                        Name          = modName,
+                        Hotel         = hotelName,
+                        DayOfSale     = lasDateTime,
+                        Count         = double.Parse(row[6].ToString()),
+                        Sum           = decimal.Parse(row[7].ToString()),
+                        SumWithoutVat = decimal.Parse(row[8].ToString()),
+                        Cost          = decimal.Parse(row[9].ToString()),
+                        CostPerUnit   = decimal.Parse(row[10].ToString())
+                    };
+                    mods.Add(modificator);
                 }
                 else
                 {
-                    meal.Category1 = row[3].ToString();
-                    meal.Category2 = row[4].ToString();
+                    meal = new Meal
+                    {
+                        Hotel         = hotelName,
+                        Name          = mealName,
+                        DayOfSale     = lasDateTime,
+                        Count         = double.Parse(row[6].ToString()),
+                        Sum           = decimal.Parse(row[7].ToString()),
+                        SumWithoutVat = decimal.Parse(row[8].ToString()),
+                        Cost          = decimal.Parse(row[9].ToString()),
+                        CostPerUnit   = decimal.Parse(row[10].ToString()),
+                        DoNotShow     = false
+                    };
+
+                    if (isDictExist)
+                    {
+                        Meal tmp = dict.Find(x => string.Equals(x.Hotel, meal.Hotel) && string.Equals(x.Name, meal.Name));
+                        if (tmp != null)
+                        {
+                            meal.DoNotShow = tmp.DoNotShow;
+                            meal.Unit      = tmp.Unit;
+                            meal.MealGroup = tmp.MealGroup;
+                            meal.Category1 = tmp.Category1;
+                            meal.Category2 = tmp.Category2;
+                            meal.Category3 = tmp.Category3;
+                        }
+                        else
+                        {
+                            meal.Unit      = row[4].ToString();
+                            meal.MealGroup = row[5].ToString();
+                            dict.Add(meal);
+                        }
+                    }
+                    else
+                    {
+                        meal.Unit      = row[4].ToString();
+                        meal.MealGroup = row[5].ToString();
+                    }
+                    if (!meal.DoNotShow)
+                    {
+                        meals.Add(meal);
+                    }
                 }
-                meals.Add(meal);
             }
             if (!isDictExist)
             {
                 using FileStream fileStream = File.Open("dict", FileMode.Create);
                 {
                     JsonSerializer.Serialize(fileStream, meals.Distinct());
+                }
+            }
+            foreach (Meal meal1 in meals)
+            {
+                List<Modificator> m =mods.FindAll(x => x.Hotel == meal1.Hotel && x.MealName == meal1.Name && x.DayOfSale == meal1.DayOfSale);
+                if (m.Any())
+                {
+                    meal1.Modificators = new BindingList<Modificator>(m);
                 }
             }
             return meals;
@@ -225,10 +286,36 @@ namespace CostBuilder.Model
             get => GetValue<decimal>();
             set => SetValue(value);
         }
+        public decimal CalculatedCost
+        {
+            get
+            {
+                if (Modificators!=null&&Modificators.Any())
+                {
+                    return Cost + Modificators.Sum(x => x.Cost);
+                }
+                return Cost;
+            }
+        }
 
         public decimal CostPerUnit
         {
             get => GetValue<decimal>();
+            set => SetValue(value);
+        }
+        public bool DoNotShow
+        {
+            get => GetValue<bool>();
+            set => SetValue(value);
+        }
+        public string Unit
+        {
+            get => GetValue<string>();
+            set => SetValue(value);
+        }
+        public string MealGroup
+        {
+            get => GetValue<string>();
             set => SetValue(value);
         }
         public string Category1
@@ -246,14 +333,9 @@ namespace CostBuilder.Model
             get => GetValue<string>();
             set => SetValue(value);
         }
-        public string Category4
+        public BindingList<Modificator> Modificators
         {
-            get => GetValue<string>();
-            set => SetValue(value);
-        }
-        public string Category5
-        {
-            get => GetValue<string>();
+            get => GetValue<BindingList<Modificator>>();
             set => SetValue(value);
         }
 
