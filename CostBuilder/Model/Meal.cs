@@ -13,19 +13,6 @@ namespace CostBuilder.Model
 {
     public class Meal : BindableBase, IEquatable<Meal>
     {
-        #region Constructor
-
-        public Meal()
-        {
-            Unit         = string.Empty;
-            MealGroup    = string.Empty;
-            Category1    = string.Empty;
-            Category2    = string.Empty;
-            Category3    = string.Empty;
-        }
-
-        #endregion
-
         #region Methods
 
         #region IEquatable
@@ -63,7 +50,7 @@ namespace CostBuilder.Model
 
         #endregion
 
-        public static void RemoveEmptyColumns(ref DataTable table, int columnStartIndex = 0)
+        private static void RemoveEmptyColumns(ref DataTable table, int columnStartIndex = 0)
         {
             for (int i = table.Columns.Count - 1; i >= columnStartIndex; i--)
             {
@@ -76,46 +63,64 @@ namespace CostBuilder.Model
             table.AcceptChanges();
         }
 
-        public static List<Meal> GetMealsListFromExcel(string filePath)
+        private static void ClearUnusedRow(string filePath, ref DataTable table)
         {
-            List<Meal>        meals = new List<Meal>(25000);
-            List<Modificator> mods  = new List<Modificator>(25000);
-            DataTable         table;
-            //Clear unused row and headers
             try
             {
-                using FileStream stream = File.Open(filePath, FileMode.Open, FileAccess.Read);
-                {
-                    using IExcelDataReader reader = ExcelReaderFactory.CreateReader(stream);
-                    {
-                        table = reader.AsDataSet().Tables[0];
-                        RemoveEmptyColumns(ref table);
-                        table.Rows.RemoveAt(table.Rows.Count);
-                        foreach (DataRow row in table.Rows)
-                        {
-                            if (row[0].ToString().Contains("всего") || row[2].ToString().Contains("всего") ||
-                                row[3].ToString().Contains("всего") || !double.TryParse(row[6].ToString(), out _))
-                            {
-                                row.Delete();
-                            }
-                        }
-                        table.AcceptChanges();
-                    }
-                }
+                FileStream       stream = File.Open(filePath, FileMode.Open, FileAccess.Read);
+                IExcelDataReader reader = ExcelReaderFactory.CreateReader(stream);
+                table = reader.AsDataSet().Tables[0];
+                reader.Dispose();
+                stream.Dispose();
             }
             catch (IOException)
             {
                 MessageBox.Show("Файл открыт в другой программе. Закройте его", "Закройте файл", MessageBoxButton.OK, MessageBoxImage.Error);
-                return new List<Meal>(0);
+                return;
             }
-            //end Clear unused row and headers
+            RemoveEmptyColumns(ref table);
+            table.Rows.RemoveAt(table.Rows.Count - 1);
+            foreach (DataRow row in table.Rows)
+            {
+                if (double.TryParse(row[6].ToString(), out _))
+                {
+                    break;
+                }
+                row.Delete();
+            }
+            table.AcceptChanges();
+            foreach (DataRow row in table.Rows)
+            {
+                if (row[0].ToString().Contains("всего") || row[1].ToString().Equals(" всего") || row[2].ToString().Contains("всего") || row[3].ToString().Contains("всего") ||
+                    row[4].ToString().Contains("всего") || row[5].ToString().Contains("всего"))
+                {
+                    row.Delete();
+                }
+            }
+            table.AcceptChanges();
+        }
+
+        public static List<Meal> GetMealsListFromExcel(string filePath)
+        {
+            List<Meal>        meals = new List<Meal>(25000);
+            List<Modificator> mods  = new List<Modificator>(25000);
+            DataTable         table = null;
+            ClearUnusedRow(filePath, ref table);
+            if (table==null)
+            {
+                return new List<Meal>();
+            }
+
             bool       isModificator = false;
             string     hotelName     = string.Empty;
             string     modName       = string.Empty;
             string     mealName      = string.Empty;
-            DateTime   lasDateTime   = default;
-            List<Meal> dict          = null;
+            string     unit          = string.Empty;
+            Meal       meal;
+            DateTime   lasDateTime = default;
+            List<Meal> dict        = null!;
             bool       isDictExist;
+            Meal       tmp;
 
             try
             {
@@ -129,11 +134,9 @@ namespace CostBuilder.Model
             {
                 isDictExist = false;
             }
-            Modificator modificator;
-            Meal        meal = null;
             foreach (DataRow row in table.Rows)
             {
-                if (row[1].ToString().Contains("всего"))
+                if (row[1].ToString() == mealName + " всего")
                 {
                     isModificator = false;
                     continue;
@@ -162,19 +165,22 @@ namespace CostBuilder.Model
                 {
                     lasDateTime = t;
                 }
+                if (!string.IsNullOrWhiteSpace(row[4].ToString()))
+                {
+                    unit = row[4].ToString();
+                }
                 if (isModificator)
                 {
-                    modificator = new Modificator
+                    Modificator modificator = new Modificator
                     {
                         MealName      = mealName,
                         Name          = modName,
                         Hotel         = hotelName,
                         DayOfSale     = lasDateTime,
-                        Count         = double.Parse(row[6].ToString()),
+                        Quantity      = double.Parse(row[6].ToString()),
                         Sum           = decimal.Parse(row[7].ToString()),
                         SumWithoutVat = decimal.Parse(row[8].ToString()),
-                        Cost          = decimal.Parse(row[9].ToString()),
-                        CostPerUnit   = decimal.Parse(row[10].ToString())
+                        Cost          = decimal.Parse(row[9].ToString())
                     };
                     mods.Add(modificator);
                 }
@@ -185,37 +191,29 @@ namespace CostBuilder.Model
                         Hotel         = hotelName,
                         Name          = mealName,
                         DayOfSale     = lasDateTime,
-                        Count         = double.Parse(row[6].ToString()),
+                        Unit          = unit,
+                        MealGroup     = row[5].ToString(),
+                        Quantity      = double.Parse(row[6].ToString()),
                         Sum           = decimal.Parse(row[7].ToString()),
                         SumWithoutVat = decimal.Parse(row[8].ToString()),
                         Cost          = decimal.Parse(row[9].ToString()),
-                        CostPerUnit   = decimal.Parse(row[10].ToString()),
                         DoNotShow     = false
                     };
 
                     if (isDictExist)
                     {
-                        Meal tmp = dict.Find(x => string.Equals(x.Hotel, meal.Hotel) && string.Equals(x.Name, meal.Name));
+                        tmp = dict.Find(x => string.Equals(x.Hotel, meal.Hotel) && string.Equals(x.Name, meal.Name));
                         if (tmp != null)
                         {
                             meal.DoNotShow = tmp.DoNotShow;
-                            meal.Unit      = tmp.Unit;
-                            meal.MealGroup = tmp.MealGroup;
                             meal.Category1 = tmp.Category1;
                             meal.Category2 = tmp.Category2;
                             meal.Category3 = tmp.Category3;
                         }
                         else
                         {
-                            meal.Unit      = row[4].ToString();
-                            meal.MealGroup = row[5].ToString();
                             dict.Add(meal);
                         }
-                    }
-                    else
-                    {
-                        meal.Unit      = row[4].ToString();
-                        meal.MealGroup = row[5].ToString();
                     }
                     if (!meal.DoNotShow)
                     {
@@ -230,12 +228,19 @@ namespace CostBuilder.Model
                     JsonSerializer.Serialize(fileStream, meals.Distinct());
                 }
             }
-            foreach (Meal meal1 in meals)
+            tmp              =   meals.Find(meal1 => meal1.Hotel == mods[0].Hotel && meal1.Name == mods[0].MealName && meal1.DayOfSale == mods[0].DayOfSale);
+            tmp.Modificators ??= new BindingList<Modificator>();
+            foreach (Modificator modificator in mods)
             {
-                List<Modificator> m =mods.FindAll(x => x.Hotel == meal1.Hotel && x.MealName == meal1.Name && x.DayOfSale == meal1.DayOfSale);
-                if (m.Any())
+                if (modificator.Hotel == tmp.Hotel && modificator.MealName == tmp.Name && modificator.DayOfSale == tmp.DayOfSale)
                 {
-                    meal1.Modificators = new BindingList<Modificator>(m);
+                    tmp.Modificators.Add(modificator);
+                }
+                else
+                {
+                    tmp              =   meals.Find(meal1 => meal1.Hotel == modificator.Hotel && meal1.Name == modificator.MealName && meal1.DayOfSale == modificator.DayOfSale);
+                    tmp.Modificators ??= new BindingList<Modificator>();
+                    tmp.Modificators.Add(modificator);
                 }
             }
             return meals;
@@ -263,7 +268,7 @@ namespace CostBuilder.Model
             set => SetValue(value);
         }
 
-        public double Count
+        public double Quantity
         {
             get => GetValue<double>();
             set => SetValue(value);
@@ -290,7 +295,7 @@ namespace CostBuilder.Model
         {
             get
             {
-                if (Modificators!=null&&Modificators.Any())
+                if (Modificators != null && Modificators.Any())
                 {
                     return Cost + Modificators.Sum(x => x.Cost);
                 }
@@ -300,8 +305,14 @@ namespace CostBuilder.Model
 
         public decimal CostPerUnit
         {
-            get => GetValue<decimal>();
-            set => SetValue(value);
+            get
+            {
+                if (CalculatedCost != 0 || Quantity != 0)
+                {
+                    return CalculatedCost / (decimal) Quantity;
+                }
+                return 0;
+            }
         }
         public bool DoNotShow
         {

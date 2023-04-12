@@ -6,7 +6,8 @@
     xmlns:dxg="http://schemas.devexpress.com/winfx/2008/xaml/grid"
     xmlns:viewModels="clr-namespace:CostBuilder.ViewModels"
     xmlns:dxe="http://schemas.devexpress.com/winfx/2008/xaml/editors"
-    Title="MainWindow" Height="800" Width="1000">
+    xmlns:model="clr-namespace:CostBuilder.Model"
+    Title="CostBuilder" Height="800" Width="1000">
     <dx:ThemedWindow.DataContext>
         <viewModels:MainViewModel />
     </dx:ThemedWindow.DataContext>
@@ -25,13 +26,18 @@
                 <dxg:GridColumn Header="Отель" FieldName="Hotel" />
                 <dxg:GridColumn Header="Название" FieldName="Name" />
                 <dxg:GridColumn Header="Учетный день" FieldName="DayOfSale" />
-                <dxg:GridColumn Header="Кол-во" FieldName="Count" />
+                <dxg:GridColumn Header="Кол-во" FieldName="Quantity" />
                 <dxg:GridColumn Header="Сумма" FieldName="Sum">
                     <dxg:GridColumn.EditSettings>
                         <dxe:TextEditSettings DisplayFormat="c2" />
                     </dxg:GridColumn.EditSettings>
                 </dxg:GridColumn>
                 <dxg:GridColumn Header="Сумма без НДС" FieldName="SumWithoutVat">
+                    <dxg:GridColumn.EditSettings>
+                        <dxe:TextEditSettings DisplayFormat="c2" />
+                    </dxg:GridColumn.EditSettings>
+                </dxg:GridColumn>
+                <dxg:GridColumn Header="Себес. без мод." FieldName="Cost">
                     <dxg:GridColumn.EditSettings>
                         <dxe:TextEditSettings DisplayFormat="c2" />
                     </dxg:GridColumn.EditSettings>
@@ -57,6 +63,12 @@
                                AllowEditing="False"
                                AllowGroupSummaryCascadeUpdate="True" ShowIndicator="False" AllowBestFit="True" BestFitMode="AllRows" AutoWidth="True" PrintAutoWidth="True"
                                ShowSearchPanelMode="Always" ShowFilterPanelMode="ShowAlways">
+                    <dxg:TableView.IsDetailButtonVisibleBinding>
+                        <MultiBinding Converter="{model:IsDetailButtonVisibleBindingConverter}" Mode="OneWay">
+                            <Binding Path="Row.Modificators.Count"/>
+                            <Binding Path="."/>
+                        </MultiBinding>
+                    </dxg:TableView.IsDetailButtonVisibleBinding>
                     <dxg:TableView.GroupValueTemplate>
                         <DataTemplate>
                             <TextBlock Text="{Binding Value}" Margin="10,0,0,0" />
@@ -65,11 +77,12 @@
                 </dxg:TableView>
             </dxg:GridControl.View>
             <dxg:GridControl.GroupSummary>
-                <dxg:GridSummaryItem FieldName="Count" SummaryType="Sum" DisplayFormat=" {0}" />
+                <dxg:GridSummaryItem FieldName="Quantity" SummaryType="Sum" DisplayFormat=" {0}" />
                 <dxg:GridSummaryItem FieldName="Sum" SummaryType="Sum" DisplayFormat=" {0:c2}" />
                 <dxg:GridSummaryItem FieldName="SumWithoutVat" SummaryType="Sum" DisplayFormat=" {0:c2}" />
                 <dxg:GridSummaryItem FieldName="CalculatedCost" SummaryType="Sum" DisplayFormat=" {0:c2}" />
                 <dxg:GridSummaryItem FieldName="CostPerUnit" SummaryType="Sum" DisplayFormat=" {0:c2}" />
+                <dxg:GridSummaryItem FieldName="Cost" SummaryType="Sum" DisplayFormat=" {0:c2}" />
             </dxg:GridControl.GroupSummary>
             <dxg:GridControl.DetailDescriptor>
                 <dxg:DataControlDetailDescriptor ItemsSourcePath="Modificators">
@@ -78,7 +91,7 @@
                             <dxg:GridColumn Header="Отель" FieldName="Hotel" />
                             <dxg:GridColumn Header="Название" FieldName="Name" />
                             <dxg:GridColumn Header="Учетный день" FieldName="DayOfSale" />
-                            <dxg:GridColumn Header="Кол-во" FieldName="Count" />
+                            <dxg:GridColumn Header="Кол-во" FieldName="Quantity" />
                             <dxg:GridColumn Header="Сумма" FieldName="Sum">
                                 <dxg:GridColumn.EditSettings>
                                     <dxe:TextEditSettings DisplayFormat="c2" />

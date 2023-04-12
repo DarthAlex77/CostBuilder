@@ -28,7 +28,7 @@ namespace CostBuilder.Model
             set => SetValue(value);
         }
 
-        public double Count
+        public double Quantity
         {
             get => GetValue<double>();
             set => SetValue(value);
@@ -54,8 +54,7 @@ namespace CostBuilder.Model
 
         public decimal CostPerUnit
         {
-            get => GetValue<decimal>();
-            set => SetValue(value);
+            get => Cost / (decimal) Quantity;
         }
     }
 }

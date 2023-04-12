@@ -136,6 +136,7 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
+    <Compile Include="Model\IsDetailButtonVisibleBindingConverter.cs" />
     <Compile Include="Model\Modificator.cs" />
     <Compile Include="ViewModels\DictionaryEditorViewModel.cs" />
     <Page Include="Views\DictionaryEditorWindow.xaml">
